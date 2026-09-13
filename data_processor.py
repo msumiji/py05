@@ -4,6 +4,7 @@ from typing import Any
 class DataProcessor(ABC):
     def __init__(self) -> None:
         self.values: list[tuple[int, str]] = []
+        self.counter = 0
 
     @abstractmethod
     def validate(self, data: Any) -> bool:
@@ -33,12 +34,13 @@ class NumericProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper numeric data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, dn in enumerate(data, start=start_n):
-                self.values.append((n, str(dn)))
+            for value in data:
+                self.values.append((self.counter, str(value)))
+                self.counter += 1
         else:
-            self.values.append((start_n,str(data)))
+            self.values.append((self.counter, str(data)))
+            self.counter += 1
 
 
 class TextProcessor(DataProcessor):
@@ -57,12 +59,13 @@ class TextProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper text data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, text in enumerate(data, start=start_n):
-                self.values.append((n, text))
-        else:
-            self.values.append((start_n,data))
+            for text in data:
+                self.values.append((self.counter, text))
+                self.counter += 1
+            else:
+                self.values.append((self.counter, data))
+                self.counter += 1
 
 class LogProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:

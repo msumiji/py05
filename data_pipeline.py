@@ -38,13 +38,17 @@ class NumericProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper numeric data")
             return
-        start_n = len(self.values)
+        # start_n = self.counter
+        # if isinstance(data, list):
+        #     for n, dn in enumerate(data, start=start_n):
+        #         self.values.append((n, str(dn)))
+        #         self.counter += 1
         if isinstance(data, list):
-            for n, dn in enumerate(data, start=start_n):
-                self.values.append((n, str(dn)))
+            for value in data:
+                self.values.append((self.counter, str(value)))
                 self.counter += 1
         else:
-            self.values.append((start_n,str(data)))
+            self.values.append((self.counter, str(data)))
             self.counter += 1
 
 
@@ -64,13 +68,12 @@ class TextProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper text data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, text in enumerate(data, start=start_n):
-                self.values.append((n, text))
+            for text in data:
+                self.values.append((self.counter, text))
                 self.counter += 1
         else:
-            self.values.append((start_n,data))
+            self.values.append((self.counter, data))
             self.counter += 1
 
 class LogProcessor(DataProcessor):
@@ -89,19 +92,18 @@ class LogProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper log data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, log in enumerate(data, start=start_n):
+            for log in data:
                 value1 = log["log_level"]
                 value2 = log["log_message"]
                 text = f"{value1}: {value2}"
-                self.values.append((n, text))
+                self.values.append((self.counter, text))
                 self.counter += 1
         else:
             value1 = data["log_level"]
             value2 = data["log_message"]
             text = f"{value1}: {value2}"
-            self.values.append((start_n,text))
+            self.values.append((self.counter,text))
             self.counter += 1
 
 
@@ -151,14 +153,12 @@ class CSVPlugin:
 
 class JSONPlugin:
     def process_output(self, data: list[tuple[int, str]]) -> None:
-        print("[")
-        for i, row in enumerate(data):
-            print(f'  [{row[0]}, "{row[1]}"]', end="")
-            if i < len(data) - 1:
-                print(",")
-            else:
-                print()
-        print("]")
+        print("JSON Output:")
+        items = [
+            f'"item_{number}": "{value}"'
+            for number, value in data
+        ]
+        print("{" + ", ".join(items) + "}")
 
 def main() -> None:
     print("=== Code Nexus - Data Pipeline ===\n")
@@ -170,7 +170,7 @@ def main() -> None:
     data_stream.register_processor(NumericProcessor())
     data_stream.register_processor(TextProcessor())
     data_stream.register_processor(LogProcessor())
-    sample_stream = [
+    sample_stream1 = [
         'Hello world',
         [3.14, -1, 2.71],
         [
@@ -186,11 +186,29 @@ def main() -> None:
         42,
         ['Hi', 'five']
     ]
-    print(f"send first batch of data on stream: {sample_stream}")
-    data_stream.process_stream(sample_stream)
+    print(f"send first batch of data on stream: {sample_stream1}")
+    data_stream.process_stream(sample_stream1)
     data_stream.print_processor_stats()
     print("Send 3 processed data from each processor to a CSV plugin")
     data_stream.output_pipeline(3, CSVPlugin())
+    print()
+    data_stream.print_processor_stats()
+    sample_stream2 =  [
+        21, ['I love AI', 'LLMs are wonderful', 'Stay healthy'], 
+        [
+            {'log_level': 'ERROR', 'log_message': '500 server crash'},
+            {'log_level': 'NOTICE', 'log_message': 'Certificate expires in 10 days'}
+        ],
+        [32, 42, 64, 84, 128, 168], 'World hello'
+    ]
+    print(f"send another batch of data: {sample_stream2}\n")
+    data_stream.process_stream(sample_stream2)
+    data_stream.print_processor_stats()
+    print()
+    print("Send 5 processed data from each processor to a JSON plugin:")
+    data_stream.output_pipeline(5, JSONPlugin())
+    data_stream.print_processor_stats()
+
 
 if __name__ == "__main__":
     main()
