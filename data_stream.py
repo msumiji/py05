@@ -37,13 +37,12 @@ class NumericProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper numeric data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, dn in enumerate(data, start=start_n):
-                self.values.append((n, str(dn)))
+            for value in data:
+                self.values.append((self.counter, str(value)))
                 self.counter += 1
         else:
-            self.values.append((start_n,str(data)))
+            self.values.append((self.counter, str(data)))
             self.counter += 1
 
 
@@ -63,13 +62,12 @@ class TextProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper text data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, text in enumerate(data, start=start_n):
-                self.values.append((n, text))
+            for text in data:
+                self.values.append((self.counter, text))
                 self.counter += 1
         else:
-            self.values.append((start_n,data))
+            self.values.append((self.counter, data))
             self.counter += 1
 
 class LogProcessor(DataProcessor):

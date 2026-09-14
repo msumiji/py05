@@ -63,9 +63,9 @@ class TextProcessor(DataProcessor):
             for text in data:
                 self.values.append((self.counter, text))
                 self.counter += 1
-            else:
-                self.values.append((self.counter, data))
-                self.counter += 1
+        else:
+            self.values.append((self.counter, data))
+            self.counter += 1
 
 class LogProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
@@ -83,18 +83,19 @@ class LogProcessor(DataProcessor):
         if self.validate(data) == False:
             print("Got exception: Improper log data")
             return
-        start_n = len(self.values)
         if isinstance(data, list):
-            for n, log in enumerate(data, start=start_n):
+            for log in data:
                 value1 = log["log_level"]
                 value2 = log["log_message"]
                 text = f"{value1}: {value2}"
-                self.values.append((n, text))
+                self.values.append((self.counter, text))
+                self.counter += 1
         else:
             value1 = data["log_level"]
             value2 = data["log_message"]
             text = f"{value1}: {value2}"
-            self.values.append((start_n,text))
+            self.values.append((self.counter,text))
+            self.counter += 1
 
 def main() -> None:
     print("=== Code Nexus - Data Processor ===\n")
