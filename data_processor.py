@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
+
 class DataProcessor(ABC):
     def __init__(self) -> None:
         self.values: list[tuple[int, str]] = []
@@ -24,14 +25,14 @@ class NumericProcessor(DataProcessor):
             return True
         if isinstance(data, list):
             return all(
-            isinstance(value, (int, float))
-            for value in data
+                isinstance(value, (int, float))
+                for value in data
             )
         else:
             return False
 
     def ingest(self, data: Any) -> None:
-        if self.validate(data) == False:
+        if not self.validate(data):
             print("Got exception: Improper numeric data")
             return
         if isinstance(data, list):
@@ -49,14 +50,14 @@ class TextProcessor(DataProcessor):
             return True
         if isinstance(data, list):
             return all(
-            isinstance(item, str)
-            for item in data
+                isinstance(item, str)
+                for item in data
             )
         else:
             return False
 
     def ingest(self, data: Any) -> None:
-        if self.validate(data) == False:
+        if not self.validate(data):
             print("Got exception: Improper text data")
             return
         if isinstance(data, list):
@@ -67,20 +68,25 @@ class TextProcessor(DataProcessor):
             self.values.append((self.counter, data))
             self.counter += 1
 
+
 class LogProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
-        if isinstance(data, dict) and set(data.keys()) == {"log_level", "log_message"}:
+        if (
+            isinstance(data, dict)
+            and set(data.keys()) == {"log_level", "log_message"}
+        ):
             return True
         if isinstance(data, list):
             return all(
-            isinstance(item, dict) and set(item.keys()) == {"log_level", "log_message"}
-            for item in data
+                isinstance(item, dict)
+                and set(item.keys()) == {"log_level", "log_message"}
+                for item in data
             )
         else:
             return False
 
     def ingest(self, data: Any) -> None:
-        if self.validate(data) == False:
+        if not self.validate(data):
             print("Got exception: Improper log data")
             return
         if isinstance(data, list):
@@ -94,8 +100,9 @@ class LogProcessor(DataProcessor):
             value1 = data["log_level"]
             value2 = data["log_message"]
             text = f"{value1}: {value2}"
-            self.values.append((self.counter,text))
+            self.values.append((self.counter, text))
             self.counter += 1
+
 
 def main() -> None:
     print("=== Code Nexus - Data Processor ===\n")
@@ -130,11 +137,20 @@ def main() -> None:
     data3 = 'Hello'
     result5 = processor3.validate(data3)
     print(f"Trying to validate input '{data3}': {result5}")
-    data4 = [{'log_level': 'NOTICE', 'log_message': 'Connection to server'}, {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}]
-    print(f"Processing data: {data4}")  
+    data4 = [
+        {
+            'log_level': 'NOTICE',
+            'log_message': 'Connection to server',
+        },
+        {
+            'log_level': 'ERROR',
+            'log_message': 'Unauthorized access!!',
+        },
+    ]
+    print(f"Processing data: {data4}")
     processor3.ingest(data4)
     print("Extracting 2 values")
-    for _ in range (2):
+    for _ in range(2):
         log_values = processor3.output()
         print(f"Log entry {log_values[0]}:{log_values[1]}")
 
